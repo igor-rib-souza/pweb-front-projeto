@@ -12,6 +12,7 @@ import {
 	CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LoginFormData {
 	email: string;
@@ -20,6 +21,7 @@ interface LoginFormData {
 
 export default function Login() {
 	const navigate = useNavigate();
+	const { login } = useAuth(); 
 
 	const [formData, setFormData] = useState<LoginFormData>({
 		email: "",
@@ -64,10 +66,14 @@ export default function Login() {
 				);
 			}
 
-			// Salvando token
-			localStorage.setItem("token", data.token);
+			login(data.token, data.user);
 
-			navigate("/");
+			if (data.user.role === "admin") {
+				navigate("/dashboard");
+			} else {
+				navigate("/");
+			}
+
 		} catch (err: any) {
 			setError(err.message);
 		} finally {
