@@ -24,7 +24,7 @@ interface Movie {
 	createdAt: string;
 }
 
-export default function MoviesByCategory() {
+export default function Movies() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 
@@ -36,7 +36,7 @@ export default function MoviesByCategory() {
 		const fetchMovies = async () => {
 			try {
 				const response = await fetch(
-					`http://localhost:3000/movie/category/${id}`
+					`http://localhost:3000/movie`
 				);
 
 				const data = await response.json();
@@ -77,7 +77,7 @@ export default function MoviesByCategory() {
 	return (
 		<Container maxWidth="lg" sx={{ mt: 6 }}>
 			<Typography variant="h4" gutterBottom>
-				Movies by Category
+				Movies
 			</Typography>
 
 			{movies.length === 0 && (

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
-import { Link } from "@mui/material";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
 	Box,
 	Button,
@@ -10,20 +9,15 @@ import {
 	Paper,
 	Alert,
 	CircularProgress,
+	Link,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface LoginFormData {
-	email: string;
-	password: string;
-}
 
 export default function Login() {
 	const navigate = useNavigate();
-	const { login } = useAuth(); 
+	const { login } = useAuth();
 
-	const [formData, setFormData] = useState<LoginFormData>({
+	const [formData, setFormData] = useState({
 		email: "",
 		password: "",
 	});
@@ -34,12 +28,10 @@ export default function Login() {
 	const handleChange = (
 		event: React.ChangeEvent<HTMLInputElement>
 	) => {
-		const { name, value } = event.target;
-
-		setFormData((prev) => ({
-			...prev,
-			[name]: value,
-		}));
+		setFormData({
+			...formData,
+			[event.target.name]: event.target.value,
+		});
 	};
 
 	const handleSubmit = async (
@@ -52,28 +44,18 @@ export default function Login() {
 		try {
 			const response = await fetch("http://localhost:3000/auth/login", {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(formData),
 			});
 
-			const data = await response.json().catch(() => null);
+			const data = await response.json();
 
 			if (!response.ok) {
-				throw new Error(
-					data?.message || "Erro ao realizar login."
-				);
+				throw new Error(data?.message || "Erro ao realizar login.");
 			}
 
 			login(data.token, data.user);
-
-			if (data.user.role === "admin") {
-				navigate("/dashboard");
-			} else {
-				navigate("/");
-			}
-
+			navigate("/");
 		} catch (err: any) {
 			setError(err.message);
 		} finally {
@@ -82,58 +64,118 @@ export default function Login() {
 	};
 
 	return (
-		<Container maxWidth="sm">
-			<Paper elevation={3} sx={{ padding: 4, marginTop: 8 }}>
-				<Typography variant="h4" align="center" gutterBottom>
-					Login
-				</Typography>
-
-				{error && <Alert severity="error">{error}</Alert>}
-
-				<Box component="form" onSubmit={handleSubmit} mt={2}>
-					<TextField
-						fullWidth
-						label="Email"
-						name="email"
-						type="email"
-						margin="normal"
-						value={formData.email}
-						onChange={handleChange}
-						required
-					/>
-
-					<TextField
-						fullWidth
-						label="Senha"
-						name="password"
-						type="password"
-						margin="normal"
-						value={formData.password}
-						onChange={handleChange}
-						required
-					/>
-
-					<Box mt={0} textAlign="right">
-						<Typography variant="body2">
-							Não tem conta?{" "}
-							<Link component={RouterLink} to="/register">
-								Registre aqui!
-							</Link>
-						</Typography>
+		<Box
+			sx={{
+				minHeight: "100vh",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				backgroundColor: "#141414",
+			}}
+		>
+			<Container maxWidth="sm">
+				<Paper
+					elevation={10}
+					sx={{
+						p: 5,
+						backgroundColor: "rgba(0,0,0,0.85)",
+						color: "white",
+						borderRadius: 3,
+						backdropFilter: "blur(8px)",
+					}}
+				>
+					<Box textAlign="center" mb={3}>
+						<img
+							src="/logo.svg"
+							alt="Logo"
+							style={{ width: 160 }}
+						/>
 					</Box>
 
-					<Button
-						type="submit"
-						variant="contained"
-						fullWidth
-						sx={{ mt: 3 }}
-						disabled={loading}
+					<Typography
+						variant="h5"
+						align="center"
+						gutterBottom
+						sx={{ fontWeight: "bold" }}
 					>
-						{loading ? <CircularProgress size={24} /> : "Entrar"}
-					</Button>
+						Welcome Back!
+					</Typography>
 
-				</Box>
-			</Paper>
-		</Container>
+					{error && (
+						<Alert
+							severity="error"
+							sx={{ mb: 2 }}
+						>
+							{error}
+						</Alert>
+					)}
+
+					<Box component="form" onSubmit={handleSubmit}>
+						<TextField
+							fullWidth
+							label="Email"
+							name="email"
+							type="email"
+							margin="normal"
+							value={formData.email}
+							onChange={handleChange}
+							required
+							InputLabelProps={{ style: { color: "#aaa" } }}
+							InputProps={{ style: { color: "white" } }}
+						/>
+
+						<TextField
+							fullWidth
+							label="Password"
+							name="password"
+							type="password"
+							margin="normal"
+							value={formData.password}
+							onChange={handleChange}
+							required
+							InputLabelProps={{ style: { color: "#aaa" } }}
+							InputProps={{ style: { color: "white" } }}
+						/>
+
+						<Box textAlign="right" mt={1}>
+							<Typography variant="body2">
+								Don't have an account?{" "}
+								<Link
+									component={RouterLink}
+									to="/register"
+									sx={{
+										color: "#E50914",
+										textDecoration: "none",
+									}}
+								>
+									Register here
+								</Link>
+							</Typography>
+						</Box>
+
+						<Button
+							type="submit"
+							fullWidth
+							variant="contained"
+							disabled={loading}
+							sx={{
+								mt: 3,
+								backgroundColor: "#E50914",
+								fontWeight: "bold",
+								"&:hover": {
+									backgroundColor: "#b20710",
+								},
+							}}
+						>
+							{loading ? (
+								<CircularProgress size={24} sx={{ color: "white" }} />
+							) : (
+								"Log in"
+							)}
+						</Button>
+					</Box>
+				</Paper>
+			</Container>
+		</Box>
 	);
 }

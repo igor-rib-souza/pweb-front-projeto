@@ -13,6 +13,8 @@ import MovieDetails from "@/pages/client/MovieDetails";
 import CreateRental from "@/pages/client/CreateRental";
 import Payment from "@/pages/client/Payment";
 import MyRentals from "@/pages/client/MyRentals";
+import ClientLayout from "@/components/layout/ClientLayout";
+import Movies from "@/pages/client/Movies";
 
 export default function AppRoutes() {
   return (
@@ -26,7 +28,7 @@ export default function AppRoutes() {
 							<Login />
 						</PublicRoute>
 					}
-				/>
+					/>
 
 				<Route
 					path="/register"
@@ -35,57 +37,67 @@ export default function AppRoutes() {
 							<Register />
 						</PublicRoute>
 					}
-				/>
+					/>
 
         {/* CLIENT */}
-				<Route
-					path="/"
-					element={
-						<UserRoute>
-							<Categories />
+				<Route element={<ClientLayout />}>
+					<Route
+						path="/"
+						element={
+							<UserRoute>
+								<Movies />
+							</UserRoute>
+						}
+						/>
+					<Route
+						path="/categories"
+						element={
+							<UserRoute>
+								<Categories />
+							</UserRoute>
+						}
+						/>
+					<Route 
+						path="/category/:id" 
+						element={
+							<UserRoute>
+								<MoviesByCategory />
+							</UserRoute>
+						} 
+						/>
+					<Route 
+						path="/movie/:id" 
+						element={
+							<UserRoute>
+								<MovieDetails />
+							</UserRoute>
+						} 
+						/>
+					<Route 
+						path="/rental/create/:movieId" 
+						element={
+							<UserRoute>
+							<CreateRental />
 						</UserRoute>
-					}
-				/>
-				<Route 
-					path="/category/:id" 
-					element={
-						<UserRoute>
-							<MoviesByCategory />
+						} 
+						/>
+					<Route 
+						path="/payment/:rentalId" 
+						element={
+							<UserRoute>
+							<Payment />
 						</UserRoute>
-					} 
-				/>
-				<Route 
-					path="/movie/:id" 
-					element={
-						<UserRoute>
-							<MovieDetails />
-						</UserRoute>
-					} 
-				/>
-				<Route 
-					path="/rental/create/:movieId" 
-					element={
-					<UserRoute>
-						<CreateRental />
-					</UserRoute>
-					} 
-				/>
-				<Route 
-					path="/payment/:rentalId" 
-					element={
-					<UserRoute>
-						<Payment />
-					</UserRoute>
-					} 
-				/>
-				<Route 
-					path="/my-rentals" 
-					element={
-						<UserRoute>
-							<MyRentals />
-						</UserRoute>
-					} 
-				/>
+						} 
+						/>
+					<Route 
+						path="/my-rentals" 
+						element={
+							<UserRoute>
+								<MyRentals />
+							</UserRoute>
+						} 
+						/>
+				</Route>
 				
         {/* ADMIN */}
 				<Route
