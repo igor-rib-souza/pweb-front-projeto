@@ -73,7 +73,7 @@ export default function Categories() {
 					color: "#E50914",
 				}}
 			>
-				Categorias
+				Categories
 			</Typography>
 
 			<Grid container spacing={3}>

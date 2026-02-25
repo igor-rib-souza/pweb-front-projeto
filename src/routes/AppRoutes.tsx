@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "@/pages/auth/Register";
 import Login from "@/pages/auth/Login";
 import Categories from "@/pages/client/Categories";
-import MoviesByCategory from "@/pages/client/MoviesByCategory";
 import Dashboard from "@/pages/admin/Dashboard";
 import UserRoute from "./UserRoutes";
 import AdminRoutes from "./AdminRoutes";
@@ -13,34 +12,37 @@ import MovieDetails from "@/pages/client/MovieDetails";
 import CreateRental from "@/pages/client/CreateRental";
 import Payment from "@/pages/client/Payment";
 import MyRentals from "@/pages/client/MyRentals";
-import ClientLayout from "@/components/layout/ClientLayout";
 import Movies from "@/pages/client/Movies";
+import MainLayout from "@/components/layout/MainLayout";
+import AuthLayout from "@/components/layout/AuthLayout";
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-				{/* PUBLIC */}
-				<Route
-					path="/login"
-					element={
-						<PublicRoute>
-							<Login />
-						</PublicRoute>
-					}
-					/>
+				<Route element={<AuthLayout />}>
+					{/* PUBLIC */}
+					<Route
+						path="/login"
+						element={
+							<PublicRoute>
+								<Login />
+							</PublicRoute>
+						}
+						/>
 
-				<Route
-					path="/register"
-					element={
-						<PublicRoute>
-							<Register />
-						</PublicRoute>
-					}
-					/>
+					<Route
+						path="/register"
+						element={
+							<PublicRoute>
+								<Register />
+							</PublicRoute>
+						}
+						/>
+				</Route>
 
         {/* CLIENT */}
-				<Route element={<ClientLayout />}>
+				<Route element={<MainLayout />}>
 					<Route
 						path="/"
 						element={
@@ -56,14 +58,6 @@ export default function AppRoutes() {
 								<Categories />
 							</UserRoute>
 						}
-						/>
-					<Route 
-						path="/category/:id" 
-						element={
-							<UserRoute>
-								<MoviesByCategory />
-							</UserRoute>
-						} 
 						/>
 					<Route 
 						path="/movie/:id" 

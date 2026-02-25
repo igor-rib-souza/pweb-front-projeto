@@ -83,7 +83,7 @@ export default function MyRentals() {
 				gutterBottom
 				sx={{ color: "#E50914", fontWeight: "bold" }}
 			>
-				My Rentals
+				Meus Aluguéis
 			</Typography>
 
 			<Grid container spacing={4}>
@@ -141,25 +141,25 @@ export default function MyRentals() {
 									</Typography>
 
 									<Typography variant="body2">
-										Days: {rental.days}
+										Dias: {rental.days}
 									</Typography>
 
 									<Typography variant="body2">
-										Start Date:{" "}
+										Data Inicial:{" "}
 										{formatDateTime(
 											rental.startDate
 										)}
 									</Typography>
 
 									<Typography variant="body2">
-										End Date:{" "}
+										Data Final:{" "}
 										{formatDateTime(
 											rental.endDate
 										)}
 									</Typography>
 
 									<Typography variant="body2">
-										Rented at:{" "}
+										Data de Locação:{" "}
 										{formatDateTime(
 											rental.rentedAt
 										)}

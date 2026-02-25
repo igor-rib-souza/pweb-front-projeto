@@ -98,7 +98,7 @@ export default function Login() {
 						gutterBottom
 						sx={{ fontWeight: "bold" }}
 					>
-						Welcome Back!
+						Login
 					</Typography>
 
 					{error && (
@@ -139,16 +139,16 @@ export default function Login() {
 
 						<Box textAlign="right" mt={1}>
 							<Typography variant="body2">
-								Don't have an account?{" "}
+								Não possui uma conta?{" "}
 								<Link
 									component={RouterLink}
 									to="/register"
 									sx={{
 										color: "#E50914",
-										textDecoration: "none",
+										textDecoration: "underline",
 									}}
 								>
-									Register here
+									Cadastre-se
 								</Link>
 							</Typography>
 						</Box>

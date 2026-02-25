@@ -3,9 +3,7 @@ import {
 	Container,
 	Typography,
 	Grid,
-	Card,
 	CardMedia,
-	CardContent,
 	CircularProgress,
 	Alert,
 	Box,
@@ -75,9 +73,9 @@ export default function Movies() {
 	}
 
 	return (
-		<Container maxWidth="lg" sx={{ mt: 6 }}>
+		<Container maxWidth="lg" sx={{ mt: 6 }} >
 			<Typography variant="h4" gutterBottom>
-				Movies
+				Filmes
 			</Typography>
 
 			{movies.length === 0 && (

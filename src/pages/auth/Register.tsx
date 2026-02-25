@@ -100,7 +100,7 @@ export default function Register() {
 						gutterBottom
 						sx={{ fontWeight: "bold" }}
 					>
-						Register
+						Cadastrar
 					</Typography>
 
 					{error && (
@@ -162,13 +162,13 @@ export default function Register() {
 
 						<Box textAlign="right" mt={1}>
 							<Typography variant="body2">
-								Do you already have an account?{" "}
+								Você já possui uma conta?{" "}
 								<Link
 									component={RouterLink}
 									to="/login"
 									sx={{
 										color: "#E50914",
-										textDecoration: "none",
+										textDecoration: "underline",
 									}}
 								>
 									Log in
@@ -193,7 +193,7 @@ export default function Register() {
 							{loading ? (
 								<CircularProgress size={24} sx={{ color: "white" }} />
 							) : (
-								"Register"
+								"Cadastrar"
 							)}
 						</Button>
 					</Box>
