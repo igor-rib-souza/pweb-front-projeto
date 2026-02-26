@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
 	Container,
 	Typography,
@@ -8,53 +8,71 @@ import {
 	Alert,
 	Box,
 	Button,
+	TextField,
+	MenuItem,
+	InputAdornment,
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface Movie {
 	id: number;
-	tmdbId: number;
 	title: string;
 	overview: string;
 	posterPath: string;
-	releaseDate: string;
 	categoryId: number;
-	createdAt: string;
+}
+
+interface Category {
+	id: number;
+	name: string;
 }
 
 export default function Movies() {
-	const { id } = useParams();
 	const navigate = useNavigate();
 
 	const [movies, setMovies] = useState<Movie[]>([]);
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [search, setSearch] = useState("");
+	const [selectedCategory, setSelectedCategory] = useState<number | "all">("all");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		const fetchMovies = async () => {
+		const fetchData = async () => {
 			try {
-				const response = await fetch(
-					`http://localhost:3000/movie`
-				);
+				const [moviesRes, categoriesRes] = await Promise.all([
+					fetch("http://localhost:3000/movie"),
+					fetch("http://localhost:3000/category"),
+				]);
 
-				const data = await response.json();
+				const moviesData = await moviesRes.json();
+				const categoriesData = await categoriesRes.json();
 
-				if (!response.ok) {
-					throw new Error(
-						data?.message || "Erro ao buscar filmes."
-					);
-				}
-
-				setMovies(data);
+				setMovies(moviesData);
+				setCategories(categoriesData);
 			} catch (err: any) {
-				setError(err.message);
+				setError("Erro ao carregar dados.");
 			} finally {
 				setLoading(false);
 			}
 		};
 
-		fetchMovies();
-	}, [id]);
+		fetchData();
+	}, []);
+
+	const filteredMovies = useMemo(() => {
+		return movies.filter((movie) => {
+			const matchesSearch = movie.title
+				.toLowerCase()
+				.includes(search.toLowerCase());
+
+			const matchesCategory =
+				selectedCategory === "all" ||
+				movie.categoryId === selectedCategory;
+
+			return matchesSearch && matchesCategory;
+		});
+	}, [movies, search, selectedCategory]);
 
 	if (loading) {
 		return (
@@ -73,16 +91,74 @@ export default function Movies() {
 	}
 
 	return (
-		<Container maxWidth="lg" sx={{ mt: 6 }} >
-			<Typography variant="h4" gutterBottom>
+		<Container maxWidth="lg" sx={{ mt: 6 }}>
+			{/* 🔎 Barra de Busca + Dropdown */}
+			<Box
+				display="flex"
+				gap={2}
+				mb={4}
+				flexWrap="wrap"
+				alignItems="center"
+			>
+				<TextField
+					fullWidth
+					placeholder="Buscar filme..."
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					InputProps={{
+						startAdornment: (
+							<InputAdornment position="start">
+							</InputAdornment>
+						),
+					}}
+					sx={{
+						flex: 2,
+						backgroundColor: "#1f1f1f",
+						borderRadius: 2,
+						input: { color: "white" },
+					}}
+				/>
+
+				<TextField
+					select
+					value={selectedCategory}
+					onChange={(e) =>
+						setSelectedCategory(
+							e.target.value === "all"
+								? "all"
+								: Number(e.target.value)
+						)
+					}
+					sx={{
+						flex: 0.5,
+						backgroundColor: "#fff",
+						borderRadius: 2,
+						minWidth: 200,
+					}}
+				>
+					<MenuItem value="all">Todas Categorias</MenuItem>
+					{categories.map((cat) => (
+						<MenuItem key={cat.id} value={cat.id}>
+							{cat.name}
+						</MenuItem>
+					))}
+				</TextField>
+			</Box>
+
+			<Typography
+				variant="h4"
+				gutterBottom
+				sx={{ color: "#E50914", fontWeight: "bold" }}
+			>
 				Filmes
 			</Typography>
 
-			{movies.length === 0 && (
+			{filteredMovies.length === 0 && (
 				<Typography>Nenhum filme encontrado.</Typography>
 			)}
+
 			<Grid container spacing={3}>
-				{movies.map((movie) => (
+					{filteredMovies.map((movie) => (
 						<Grid
 							key={movie.id}
 							size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
@@ -94,26 +170,20 @@ export default function Movies() {
 								overflow: "hidden",
 								cursor: "pointer",
 								transition: "0.3s",
-								"&:hover": {
-									transform: "scale(1.05)",
-								},
-								"&:hover .overlay": {
-									opacity: 1,
-								},
+								"&:hover": { transform: "scale(1.05)" },
+								"&:hover .overlay": { opacity: 1 },
 							}}
-							onClick={() => navigate(`/movie/${movie.id}`)}
+							onClick={() =>
+								navigate(`/movie/${movie.id}`)
+							}
 						>
 							<CardMedia
 								component="img"
 								image={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
 								alt={movie.title}
-								sx={{
-									height: 380,
-									objectFit: "cover",
-								}}
+								sx={{ height: 380, objectFit: "cover" }}
 							/>
 
-							{/* Overlay estilo Netflix */}
 							<Box
 								className="overlay"
 								sx={{
