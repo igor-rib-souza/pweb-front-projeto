@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Register from "@/pages/auth/Register";
 import Login from "@/pages/auth/Login";
-import Categories from "@/pages/client/Categories";
 import Dashboard from "@/pages/admin/Dashboard";
 import UserRoute from "./UserRoutes";
 import AdminRoutes from "./AdminRoutes";
@@ -48,14 +47,6 @@ export default function AppRoutes() {
 						element={
 							<UserRoute>
 								<Movies />
-							</UserRoute>
-						}
-						/>
-					<Route
-						path="/categories"
-						element={
-							<UserRoute>
-								<Categories />
 							</UserRoute>
 						}
 						/>
