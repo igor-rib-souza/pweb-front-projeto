@@ -11,6 +11,9 @@ import {
 	TextField,
 	MenuItem,
 	InputAdornment,
+	Dialog,
+	DialogContent,
+	IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +39,9 @@ export default function Movies() {
 	const [selectedCategory, setSelectedCategory] = useState<number | "all">("all");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+
+	const [openModal, setOpenModal] = useState(false);
+	const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -91,147 +97,224 @@ export default function Movies() {
 	}
 
 	return (
-		<Container maxWidth="lg" sx={{ mt: 6 }}>
-			{/* 🔎 Barra de Busca + Dropdown */}
-			<Box
-				display="flex"
-				gap={2}
-				mb={4}
-				flexWrap="wrap"
-				alignItems="center"
+		<>
+			<Dialog
+				open={openModal}
+				onClose={() => setOpenModal(false)}
+				maxWidth="md"
+				fullWidth
+				PaperProps={{
+					sx: {
+						backgroundColor: "#141414",
+						color: "white",
+						borderRadius: 3,
+					},
+				}}
 			>
-				<TextField
-					fullWidth
-					placeholder="Buscar filme..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					InputProps={{
-						startAdornment: (
-							<InputAdornment position="start">
-							</InputAdornment>
-						),
-					}}
-					sx={{
-						flex: 2,
-						backgroundColor: "#1f1f1f",
-						borderRadius: 2,
-						input: { color: "white" },
-					}}
-				/>
+				{selectedMovie && (
+					<DialogContent>
+						<Box display="flex" gap={4} flexWrap="wrap">
+							
+							{/* 🎬 Banner */}
+							<Box flex={1} minWidth={250}>
+								<CardMedia
+									component="img"
+									image={`https://image.tmdb.org/t/p/w500${selectedMovie.posterPath}`}
+									alt={selectedMovie.title}
+									sx={{ borderRadius: 2 }}
+								/>
+							</Box>
 
-				<TextField
-					select
-					value={selectedCategory}
-					onChange={(e) =>
-						setSelectedCategory(
-							e.target.value === "all"
-								? "all"
-								: Number(e.target.value)
-						)
-					}
-					sx={{
-						flex: 0.5,
-						backgroundColor: "#fff",
-						borderRadius: 2,
-						minWidth: 200,
-					}}
-				>
-					<MenuItem value="all">Todas Categorias</MenuItem>
-					{categories.map((cat) => (
-						<MenuItem key={cat.id} value={cat.id}>
-							{cat.name}
-						</MenuItem>
-					))}
-				</TextField>
-			</Box>
+							{/* 📄 Informações */}
+							<Box flex={1} minWidth={250} display="flex" flexDirection="column" justifyContent="space-between">
+								
+								<Box>
+									<Typography variant="h5" fontWeight="bold" mb={2}>
+										{selectedMovie.title}
+									</Typography>
 
-			<Typography
-				variant="h4"
-				gutterBottom
-				sx={{ color: "#E50914", fontWeight: "bold" }}
-			>
-				Filmes
-			</Typography>
+									<Typography variant="body1" mb={2}>
+										{selectedMovie.overview}
+									</Typography>
 
-			{filteredMovies.length === 0 && (
-				<Typography>Nenhum filme encontrado.</Typography>
-			)}
-
-			<Grid container spacing={3}>
-					{filteredMovies.map((movie) => (
-						<Grid
-							key={movie.id}
-							size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-						>
-						<Box
-							sx={{
-								position: "relative",
-								borderRadius: 3,
-								overflow: "hidden",
-								cursor: "pointer",
-								transition: "0.3s",
-								"&:hover": { transform: "scale(1.05)" },
-								"&:hover .overlay": { opacity: 1 },
-							}}
-							onClick={() =>
-								navigate(`/movie/${movie.id}`)
-							}
-						>
-							<CardMedia
-								component="img"
-								image={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
-								alt={movie.title}
-								sx={{ height: 380, objectFit: "cover" }}
-							/>
-
-							<Box
-								className="overlay"
-								sx={{
-									position: "absolute",
-									top: 0,
-									left: 0,
-									width: "100%",
-									height: "100%",
-									background:
-										"linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2))",
-									display: "flex",
-									flexDirection: "column",
-									justifyContent: "flex-end",
-									p: 0,
-									opacity: 0,
-									transition: "0.3s",
-								}}
-							>
-								<Typography
-									variant="subtitle1"
-									sx={{
-										marginLeft: 1,
-										color: "white",
-										fontWeight: "bold",
-									}}
-								>
-									{movie.title}
-								</Typography>
+									<Typography variant="h6" color="#E50914">
+										R$ 9,90 / dia
+									</Typography>
+								</Box>
 
 								<Button
 									variant="contained"
+									fullWidth
 									sx={{
-										mt: 1,
-										margin: 1,
+										mt: 3,
 										backgroundColor: "#E50914",
-										borderRadius: 3,
 										"&:hover": {
 											backgroundColor: "#b20710",
 										},
 									}}
 								>
-									Ver detalhes
+									Alugar
 								</Button>
 							</Box>
 						</Box>
-					</Grid>
-				))}
-			</Grid>
-		</Container>
+
+						{/* Botão fechar */}
+						<IconButton
+							onClick={() => setOpenModal(false)}
+							sx={{
+								position: "absolute",
+								top: 8,
+								right: 8,
+								color: "white",
+							}}
+						>
+						</IconButton>
+					</DialogContent>
+				)}
+			</Dialog>
+			<Container maxWidth="lg" sx={{ mt: 6 }}>
+				{/* 🔎 Barra de Busca + Dropdown */}
+				<Box
+					display="flex"
+					gap={2}
+					mb={4}
+					flexWrap="wrap"
+					alignItems="center"
+				>
+					<TextField
+						fullWidth
+						placeholder="Buscar filme..."
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						InputProps={{
+							startAdornment: (
+								<InputAdornment position="start">
+								</InputAdornment>
+							),
+						}}
+						sx={{
+							flex: 2,
+							backgroundColor: "#1f1f1f",
+							borderRadius: 2,
+							input: { color: "white" },
+						}}
+					/>
+
+					<TextField
+						select
+						value={selectedCategory}
+						onChange={(e) =>
+							setSelectedCategory(
+								e.target.value === "all"
+									? "all"
+									: Number(e.target.value)
+							)
+						}
+						sx={{
+							flex: 0.5,
+							backgroundColor: "#fff",
+							borderRadius: 2,
+							minWidth: 200,
+						}}
+					>
+						<MenuItem value="all">Todas Categorias</MenuItem>
+						{categories.map((cat) => (
+							<MenuItem key={cat.id} value={cat.id}>
+								{cat.name}
+							</MenuItem>
+						))}
+					</TextField>
+				</Box>
+
+				<Typography
+					variant="h4"
+					gutterBottom
+					sx={{ color: "#E50914", fontWeight: "bold" }}
+				>
+					Filmes
+				</Typography>
+
+				{filteredMovies.length === 0 && (
+					<Typography>Nenhum filme encontrado.</Typography>
+				)}
+
+				<Grid container spacing={3}>
+						{filteredMovies.map((movie) => (
+							<Grid
+								key={movie.id}
+								size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+							>
+							<Box
+								sx={{
+									position: "relative",
+									borderRadius: 3,
+									overflow: "hidden",
+									cursor: "pointer",
+									transition: "0.3s",
+									"&:hover": { transform: "scale(1.05)" },
+									"&:hover .overlay": { opacity: 1 },
+								}}
+								onClick={() => {
+									setSelectedMovie(movie);
+									setOpenModal(true);
+								}}
+							>
+								<CardMedia
+									component="img"
+									image={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
+									alt={movie.title}
+									sx={{ height: 380, objectFit: "cover" }}
+								/>
+
+								<Box
+									className="overlay"
+									sx={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										width: "100%",
+										height: "100%",
+										background:
+											"linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2))",
+										display: "flex",
+										flexDirection: "column",
+										justifyContent: "flex-end",
+										p: 0,
+										opacity: 0,
+										transition: "0.3s",
+									}}
+								>
+									<Typography
+										variant="subtitle1"
+										sx={{
+											marginLeft: 1,
+											color: "white",
+											fontWeight: "bold",
+										}}
+									>
+										{movie.title}
+									</Typography>
+
+									<Button
+										variant="contained"
+										sx={{
+											mt: 1,
+											margin: 1,
+											backgroundColor: "#E50914",
+											borderRadius: 3,
+											"&:hover": {
+												backgroundColor: "#b20710",
+											},
+										}}
+									>
+										Ver detalhes
+									</Button>
+								</Box>
+							</Box>
+						</Grid>
+					))}
+				</Grid>
+			</Container>
+		</>
 	);
 }
