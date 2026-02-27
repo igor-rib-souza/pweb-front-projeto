@@ -7,7 +7,7 @@ export default function PublicRoute({ children }: { children: JSX.Element }) {
 
   if (isAuthenticated && user) {
     if (user.role === "admin") {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/movies" replace />;
     }
 
     return <Navigate to="/" replace />;

@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Register from "@/pages/auth/Register";
 import Login from "@/pages/auth/Login";
-import Dashboard from "@/pages/admin/Dashboard";
 import UserRoute from "./UserRoutes";
 import AdminRoutes from "./AdminRoutes";
 import PublicRoute from "./PublicRoutes";
@@ -65,14 +64,6 @@ export default function AppRoutes() {
 				
         {/* ADMIN */}
 				<Route element={<AdminLayout />}>
-					<Route
-						path="/dashboard"
-						element={
-							<AdminRoutes>
-								<Dashboard />
-							</AdminRoutes>
-						}
-					/>
 					<Route
 						path="/movies"
 						element={

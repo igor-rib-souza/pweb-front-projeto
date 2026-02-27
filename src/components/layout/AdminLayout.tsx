@@ -33,12 +33,12 @@ export default function MainLayout() {
 						src="/logo.svg"
 						alt="Logo"
 						sx={{ height: 40, mr: 2, cursor: "pointer" }}
-						onClick={() => navigate("/dashboard")}
+						onClick={() => navigate("/movies")}
 					/>
 					<Typography
 						variant="h6"
 						sx={{ fontWeight: "bold", color: "#E40915", cursor: "pointer" }}
-						onClick={() => navigate("/dashboard")}
+						onClick={() => navigate("movies")}
 					>
 						Sistema de Locadora
 					</Typography>
