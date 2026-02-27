@@ -11,11 +11,10 @@ import {
 	TextField,
 	MenuItem,
 	InputAdornment,
-	Dialog,
-	DialogContent,
-	IconButton,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import MovieDetailsModal from "../../components/MovieDetailsModal";
+import RentalConfirmationModal from "../../components/RentalConfirmationModal";
+import PaymentConfirmationModal from "@/components/PaymentConfirmationModal";
 
 interface Movie {
 	id: number;
@@ -31,8 +30,6 @@ interface Category {
 }
 
 export default function Movies() {
-	const navigate = useNavigate();
-
 	const [movies, setMovies] = useState<Movie[]>([]);
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [search, setSearch] = useState("");
@@ -42,7 +39,12 @@ export default function Movies() {
 
 	const [openModal, setOpenModal] = useState(false);
 	const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+	
+	const [openRentalModal, setOpenRentalModal] = useState(false);
+	const [openPaymentModal, setOpenPaymentModal] = useState(false);
 
+	const [createdRentalId, setCreatedRentalId] = useState<number | null>(null);
+	const [createdRentalAmount, setCreatedRentalAmount] = useState<number>(0);
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -98,80 +100,34 @@ export default function Movies() {
 
 	return (
 		<>
-			<Dialog
+			<MovieDetailsModal
 				open={openModal}
 				onClose={() => setOpenModal(false)}
-				maxWidth="md"
-				fullWidth
-				PaperProps={{
-					sx: {
-						backgroundColor: "#141414",
-						color: "white",
-						borderRadius: 3,
-					},
+				movie={selectedMovie}
+				onRent={() => {
+					setOpenModal(false);
+					setOpenRentalModal(true);
 				}}
-			>
-				{selectedMovie && (
-					<DialogContent>
-						<Box display="flex" gap={4} flexWrap="wrap">
-							
-							{/* 🎬 Banner */}
-							<Box flex={1} minWidth={250}>
-								<CardMedia
-									component="img"
-									image={`https://image.tmdb.org/t/p/w500${selectedMovie.posterPath}`}
-									alt={selectedMovie.title}
-									sx={{ borderRadius: 2 }}
-								/>
-							</Box>
+			/>
 
-							{/* 📄 Informações */}
-							<Box flex={1} minWidth={250} display="flex" flexDirection="column" justifyContent="space-between">
-								
-								<Box>
-									<Typography variant="h5" fontWeight="bold" mb={2}>
-										{selectedMovie.title}
-									</Typography>
+			<RentalConfirmationModal
+				open={openRentalModal}
+				onClose={() => setOpenRentalModal(false)}
+				movie={selectedMovie}
+				onRentalCreated={(rentalId, amount) => {
+					setOpenRentalModal(false);
+					setCreatedRentalId(rentalId);
+					setCreatedRentalAmount(amount);
+					setOpenPaymentModal(true);
+				}}
+			/>
 
-									<Typography variant="body1" mb={2}>
-										{selectedMovie.overview}
-									</Typography>
-
-									<Typography variant="h6" color="#E50914">
-										R$ 9,90 / dia
-									</Typography>
-								</Box>
-
-								<Button
-									variant="contained"
-									fullWidth
-									sx={{
-										mt: 3,
-										backgroundColor: "#E50914",
-										"&:hover": {
-											backgroundColor: "#b20710",
-										},
-									}}
-								>
-									Alugar
-								</Button>
-							</Box>
-						</Box>
-
-						{/* Botão fechar */}
-						<IconButton
-							onClick={() => setOpenModal(false)}
-							sx={{
-								position: "absolute",
-								top: 8,
-								right: 8,
-								color: "white",
-							}}
-						>
-						</IconButton>
-					</DialogContent>
-				)}
-			</Dialog>
+			<PaymentConfirmationModal
+				open={openPaymentModal}
+				onClose={() => setOpenPaymentModal(false)}
+				rentalId={createdRentalId}
+				amount={createdRentalAmount}
+			/>
 			<Container maxWidth="lg" sx={{ mt: 6 }}>
 				{/* 🔎 Barra de Busca + Dropdown */}
 				<Box
