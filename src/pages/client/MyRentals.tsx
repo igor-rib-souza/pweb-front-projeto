@@ -16,6 +16,11 @@ import {
 	Box,
 } from "@mui/material";
 
+interface Category {
+	id: number;
+	name: string;
+}
+
 interface Rental {
 	id: number;
 	days: number;
@@ -34,6 +39,7 @@ interface Rental {
 
 export default function MyRentals() {
 	const [rentals, setRentals] = useState<Rental[]>([]);
+	const [categories, setCategories] = useState<Category[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -41,9 +47,12 @@ export default function MyRentals() {
 	const token = localStorage.getItem("token");
 
 	useEffect(() => {
-		const fetchRentals = async () => {
+		const fetchData = async () => {
 			try {
-				const response = await fetch(
+				setLoading(true);
+
+				// Buscar aluguéis
+				const rentalResponse = await fetch(
 					`http://localhost:3000/rental/user/${user.id}`,
 					{
 						headers: {
@@ -52,12 +61,30 @@ export default function MyRentals() {
 					}
 				);
 
-				if (!response.ok) {
+				if (!rentalResponse.ok) {
 					throw new Error("Erro ao buscar aluguéis");
 				}
 
-				const data = await response.json();
-				setRentals(data);
+				const rentalData = await rentalResponse.json();
+				setRentals(rentalData);
+
+				// Buscar categorias
+				const categoryResponse = await fetch(
+					"http://localhost:3000/category",
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				);
+
+				if (!categoryResponse.ok) {
+					throw new Error("Erro ao buscar categorias");
+				}
+
+				const categoryData = await categoryResponse.json();
+				setCategories(categoryData);
+
 			} catch (err: any) {
 				setError(err.message);
 			} finally {
@@ -65,7 +92,7 @@ export default function MyRentals() {
 			}
 		};
 
-		if (user?.id) fetchRentals();
+		if (user?.id) fetchData();
 		else {
 			setError("Usuário não encontrado.");
 			setLoading(false);
@@ -74,8 +101,13 @@ export default function MyRentals() {
 
 	const formatDate = (date: string | null) => {
 		if (!date) return "—";
-		const d = new Date(date);
-		return d.toLocaleDateString("pt-BR");
+		return new Date(date).toLocaleDateString("pt-BR");
+	};
+
+	const getCategoryName = (categoryId?: number) => {
+		if (!categoryId) return "—";
+		const category = categories.find((c) => c.id === categoryId);
+		return category ? category.name : "—";
 	};
 
 	const getStatusChip = (status: string | undefined) => {
@@ -118,7 +150,7 @@ export default function MyRentals() {
 				gutterBottom
 				sx={{
 					color: "white",
-					fontWeight: "500",
+					fontWeight: 500,
 					mb: 4,
 				}}
 			>
@@ -129,7 +161,6 @@ export default function MyRentals() {
 				component={Paper}
 				sx={{
 					backgroundColor: "#121212",
-					borderRadius: 3,
 				}}
 			>
 				<Table>
@@ -177,40 +208,37 @@ export default function MyRentals() {
 										},
 									}}
 								>
-									<TableCell sx={{ color: "white" }}>
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
 										{rental.id}
 									</TableCell>
 
-									<TableCell sx={{ color: "white" }}>
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
 										{rental.movie.title}
 									</TableCell>
 
-									<TableCell sx={{ color: "white" }}>
-										{rental.movie.categoryId ??
-											"—"}
-									</TableCell>
-
-									<TableCell sx={{ color: "white" }}>
-										{formatDate(
-											rental.startDate
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
+										{getCategoryName(
+											rental.movie.categoryId
 										)}
 									</TableCell>
 
-									<TableCell sx={{ color: "white" }}>
-										{formatDate(
-											rental.endDate
-										)}
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
+										{formatDate(rental.startDate)}
 									</TableCell>
 
-									<TableCell sx={{ color: "white" }}>
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
+										{formatDate(rental.endDate)}
+									</TableCell>
+
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
 										R$ {amount.toFixed(2)}
 									</TableCell>
 
-									<TableCell>
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
 										{getStatusChip(status)}
 									</TableCell>
 
-									<TableCell>
+									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
 										<Button
 											size="small"
 											sx={{
