@@ -7,7 +7,6 @@ import UserRoute from "./UserRoutes";
 import AdminRoutes from "./AdminRoutes";
 import PublicRoute from "./PublicRoutes";
 import NotFound from "@/pages/NotFound";
-import CreateRental from "@/pages/client/CreateRental";
 import MyRentals from "@/pages/client/MyRentals";
 import Movies from "@/pages/client/Movies";
 import MainLayout from "@/components/layout/MainLayout";
@@ -47,14 +46,6 @@ export default function AppRoutes() {
 								<Movies />
 							</UserRoute>
 						}
-						/>
-					<Route 
-						path="/rental/create/:movieId" 
-						element={
-							<UserRoute>
-								<CreateRental />
-							</UserRoute>
-						} 
 						/>
 					<Route 
 						path="/my-rentals" 
