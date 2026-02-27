@@ -4,11 +4,15 @@ import {
 	Typography,
 	Alert,
 	CircularProgress,
-	Grid,
-	Card,
-	CardContent,
-	CardMedia,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	Paper,
 	Chip,
+	Button,
 	Box,
 } from "@mui/material";
 
@@ -20,10 +24,11 @@ interface Rental {
 	rentedAt: string;
 	movie: {
 		title: string;
-		posterPath: string;
+		categoryId?: number;
 	};
 	payment?: {
 		status: string;
+		amount?: number;
 	};
 }
 
@@ -67,109 +72,161 @@ export default function MyRentals() {
 		}
 	}, [user?.id, token]);
 
-	const formatDateTime = (date: string | null) => {
+	const formatDate = (date: string | null) => {
 		if (!date) return "—";
 		const d = new Date(date);
-		return `${d.toLocaleDateString("pt-BR")} at ${d.toLocaleTimeString("pt-BR")}`;
+		return d.toLocaleDateString("pt-BR");
 	};
 
-	if (loading) return <CircularProgress sx={{ color: "#E50914" }} />;
-	if (error) return <Alert severity="error">{error}</Alert>;
+	const getStatusChip = (status: string | undefined) => {
+		if (!status) return <Chip label="—" />;
+
+		const isPaid = status === "PAID";
+
+		return (
+			<Chip
+				label={isPaid ? "Pago" : "Pendente"}
+				sx={{
+					backgroundColor: isPaid ? "#2e7d32" : "#f9a825",
+					color: "white",
+					fontWeight: "bold",
+					borderRadius: "20px",
+					px: 2,
+				}}
+			/>
+		);
+	};
+
+	if (loading)
+		return (
+			<Box display="flex" justifyContent="center" mt={8}>
+				<CircularProgress sx={{ color: "#E50914" }} />
+			</Box>
+		);
+
+	if (error)
+		return (
+			<Container sx={{ mt: 6 }}>
+				<Alert severity="error">{error}</Alert>
+			</Container>
+		);
 
 	return (
-		<Container sx={{ mt: 6 }}>
+		<Container maxWidth="lg" sx={{ mt: 6 }}>
 			<Typography
 				variant="h4"
 				gutterBottom
-				sx={{ color: "#E50914", fontWeight: "bold" }}
+				sx={{
+					color: "white",
+					fontWeight: "500",
+					mb: 4,
+				}}
 			>
 				Meus Aluguéis
 			</Typography>
 
-			<Grid container spacing={4}>
-				{rentals.map((rental) => {
-					const status = rental.payment?.status || "—";
-					const isPaid = status === "PAID";
+			<TableContainer
+				component={Paper}
+				sx={{
+					backgroundColor: "#121212",
+					borderRadius: 3,
+				}}
+			>
+				<Table>
+					<TableHead>
+						<TableRow>
+							{[
+								"ID",
+								"Filme",
+								"Categoria",
+								"Data Início",
+								"Data Fim",
+								"Valor",
+								"Status de Pagamento",
+								"Ações",
+							].map((header) => (
+								<TableCell
+									key={header}
+									sx={{
+										color: "#ccc",
+										fontWeight: "bold",
+										borderBottom: "1px solid #333",
+										borderTop: "1px solid #333",
+									}}
+								>
+									{header}
+								</TableCell>
+							))}
+						</TableRow>
+					</TableHead>
 
-					return (
-						<Grid
-							key={rental.id}
-							size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-						>
-							<Card
-								sx={{
-									backgroundColor: "#1F1F1F",
-									color: "white",
-									borderRadius: 3,
-									transition: "0.3s",
-									"&:hover": {
-										transform: "scale(1.03)",
-										boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
-									},
-								}}
-							>
-								<CardMedia
-									component="img"
-									height="300"
-									image={`https://image.tmdb.org/t/p/w500${rental.movie.posterPath}`}
-									alt={rental.movie.title}
-								/>
+					<TableBody>
+						{rentals.map((rental) => {
+							const status = rental.payment?.status;
+							const amount =
+								rental.payment?.amount ??
+								rental.days * 9.9;
 
-								<CardContent>
-									<Typography
-										variant="h6"
-										sx={{ fontWeight: "bold" }}
-									>
+							return (
+								<TableRow
+									key={rental.id}
+									sx={{
+										"&:hover": {
+											backgroundColor:
+												"#1f1f1f",
+										},
+									}}
+								>
+									<TableCell sx={{ color: "white" }}>
+										{rental.id}
+									</TableCell>
+
+									<TableCell sx={{ color: "white" }}>
 										{rental.movie.title}
-									</Typography>
+									</TableCell>
 
-									<Box sx={{ my: 1 }}>
-										<Chip
-											label={status}
-											sx={{
-												backgroundColor: isPaid
-													? "#2e7d32"
-													: "#f9a825",
-												color: "white",
-												fontWeight: "bold",
-											}}
-										/>
-									</Box>
+									<TableCell sx={{ color: "white" }}>
+										{rental.movie.categoryId ??
+											"—"}
+									</TableCell>
 
-									<Typography variant="body2">
-										ID: {rental.id}
-									</Typography>
-
-									<Typography variant="body2">
-										Dias: {rental.days}
-									</Typography>
-
-									<Typography variant="body2">
-										Data Inicial:{" "}
-										{formatDateTime(
+									<TableCell sx={{ color: "white" }}>
+										{formatDate(
 											rental.startDate
 										)}
-									</Typography>
+									</TableCell>
 
-									<Typography variant="body2">
-										Data Final:{" "}
-										{formatDateTime(
+									<TableCell sx={{ color: "white" }}>
+										{formatDate(
 											rental.endDate
 										)}
-									</Typography>
+									</TableCell>
 
-									<Typography variant="body2">
-										Data de Locação:{" "}
-										{formatDateTime(
-											rental.rentedAt
-										)}
-									</Typography>
-								</CardContent>
-							</Card>
-						</Grid>
-					);
-				})}
-			</Grid>
+									<TableCell sx={{ color: "white" }}>
+										R$ {amount.toFixed(2)}
+									</TableCell>
+
+									<TableCell>
+										{getStatusChip(status)}
+									</TableCell>
+
+									<TableCell>
+										<Button
+											size="small"
+											sx={{
+												color: "#E50914",
+												fontWeight: "bold",
+											}}
+										>
+											Ver
+										</Button>
+									</TableCell>
+								</TableRow>
+							);
+						})}
+					</TableBody>
+				</Table>
+			</TableContainer>
 		</Container>
 	);
 }
