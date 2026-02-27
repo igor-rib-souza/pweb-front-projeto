@@ -19,6 +19,8 @@ import {
 import RentalDetailsModal from "../../components/RentalDetailsModal";
 import RentalConfirmationModal from "@/components/RentalConfirmationModal";
 import PaymentConfirmationModal from "@/components/PaymentConfirmationModal";
+import EditDocumentIcon from '@mui/icons-material/EditDocument';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface Category {
 	id: number;
@@ -238,16 +240,24 @@ export default function MyRentals() {
 										{getStatusChip(rental.payment?.status)}
 									</TableCell>
 									<TableCell>
-										<Button
-											size="small"
+										<EditDocumentIcon
 											sx={{
-												color: "#E50914",
 												fontWeight: "bold",
+												cursor: "pointer",
+												transition: "0.3s",
+												"&:hover": { color: "#E50914"}
 											}}
 											onClick={() => handleOpenDetails(rental)}
-										>
-											Ver
-										</Button>
+										/>
+										<DeleteIcon
+											sx={{
+												fontWeight: "bold",
+												cursor: "pointer",
+												transition: "0.3s",
+												"&:hover": { color: "#E50914"}
+											}}
+										/>
+
 									</TableCell>
 								</TableRow>
 							);
@@ -256,7 +266,6 @@ export default function MyRentals() {
 				</Table>
 			</TableContainer>
 
-			{/* 🔥 Modal detalhes */}
 			<RentalDetailsModal
 				open={detailsOpen}
 				onClose={handleCloseDetails}
@@ -270,7 +279,6 @@ export default function MyRentals() {
 				}}
 			/>
 
-			{/* 🔥 Confirmação aluguel */}
 			<RentalConfirmationModal
 				open={openRentalModal}
 				onClose={() => setOpenRentalModal(false)}
@@ -283,7 +291,6 @@ export default function MyRentals() {
 				}}
 			/>
 
-			{/* 🔥 Confirmação pagamento */}
 			<PaymentConfirmationModal
 				open={openPaymentModal}
 				onClose={async () => {

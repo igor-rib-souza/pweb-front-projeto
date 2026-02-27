@@ -8,7 +8,7 @@ export default function UserRoute({ children }: { children: JSX.Element }) {
   if (!user) return <Navigate to="/login" />;
 
   if (user.role !== "user") {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/movies" replace />;
   }
 
   return children;
