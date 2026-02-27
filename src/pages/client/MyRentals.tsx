@@ -16,6 +16,10 @@ import {
 	Box,
 } from "@mui/material";
 
+import RentalDetailsModal from "../../components/RentalDetailsModal";
+import RentalConfirmationModal from "@/components/RentalConfirmationModal";
+import PaymentConfirmationModal from "@/components/PaymentConfirmationModal";
+
 interface Category {
 	id: number;
 	name: string;
@@ -28,7 +32,10 @@ interface Rental {
 	endDate: string | null;
 	rentedAt: string;
 	movie: {
+		id: number;
 		title: string;
+		overview: string;
+		posterPath: string;
 		categoryId?: number;
 	};
 	payment?: {
@@ -43,48 +50,54 @@ export default function MyRentals() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
+	const [selectedRental, setSelectedRental] = useState<Rental | null>(null);
+	const [selectedMovie, setSelectedMovie] = useState<any | null>(null);
+
+	const [detailsOpen, setDetailsOpen] = useState(false);
+	const [openRentalModal, setOpenRentalModal] = useState(false);
+	const [openPaymentModal, setOpenPaymentModal] = useState(false);
+
+	const [createdRentalId, setCreatedRentalId] = useState<number | null>(null);
+	const [createdRentalAmount, setCreatedRentalAmount] = useState<number>(0);
+
 	const user = JSON.parse(localStorage.getItem("user") || "{}");
 	const token = localStorage.getItem("token");
+
+	// 🔥 Função reutilizável
+	const fetchRentals = async () => {
+		const response = await fetch(
+			`http://localhost:3000/rental/user/${user.id}`,
+			{
+				headers: { Authorization: `Bearer ${token}` },
+			}
+		);
+
+		if (!response.ok) throw new Error("Erro ao buscar aluguéis");
+
+		const data = await response.json();
+		setRentals(data);
+	};
+
+	const fetchCategories = async () => {
+		const response = await fetch(
+			"http://localhost:3000/category",
+			{
+				headers: { Authorization: `Bearer ${token}` },
+			}
+		);
+
+		if (!response.ok) throw new Error("Erro ao buscar categorias");
+
+		const data = await response.json();
+		setCategories(data);
+	};
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setLoading(true);
-
-				// Buscar aluguéis
-				const rentalResponse = await fetch(
-					`http://localhost:3000/rental/user/${user.id}`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				);
-
-				if (!rentalResponse.ok) {
-					throw new Error("Erro ao buscar aluguéis");
-				}
-
-				const rentalData = await rentalResponse.json();
-				setRentals(rentalData);
-
-				// Buscar categorias
-				const categoryResponse = await fetch(
-					"http://localhost:3000/category",
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				);
-
-				if (!categoryResponse.ok) {
-					throw new Error("Erro ao buscar categorias");
-				}
-
-				const categoryData = await categoryResponse.json();
-				setCategories(categoryData);
-
+				await fetchRentals();
+				await fetchCategories();
 			} catch (err: any) {
 				setError(err.message);
 			} finally {
@@ -99,18 +112,26 @@ export default function MyRentals() {
 		}
 	}, [user?.id, token]);
 
-	const formatDate = (date: string | null) => {
-		if (!date) return "—";
-		return new Date(date).toLocaleDateString("pt-BR");
+	const handleOpenDetails = (rental: Rental) => {
+		setSelectedRental(rental);
+		setDetailsOpen(true);
 	};
+
+	const handleCloseDetails = () => {
+		setDetailsOpen(false);
+		setSelectedRental(null);
+	};
+
+	const formatDate = (date: string | null) =>
+		date ? new Date(date).toLocaleDateString("pt-BR") : "—";
 
 	const getCategoryName = (categoryId?: number) => {
 		if (!categoryId) return "—";
 		const category = categories.find((c) => c.id === categoryId);
-		return category ? category.name : "—";
+		return category?.name ?? "—";
 	};
 
-	const getStatusChip = (status: string | undefined) => {
+	const getStatusChip = (status?: string) => {
 		if (!status) return <Chip label="—" />;
 
 		const isPaid = status === "PAID";
@@ -123,7 +144,6 @@ export default function MyRentals() {
 					color: "white",
 					fontWeight: "bold",
 					borderRadius: "20px",
-					px: 2,
 				}}
 			/>
 		);
@@ -145,35 +165,23 @@ export default function MyRentals() {
 
 	return (
 		<Container maxWidth="lg" sx={{ mt: 6 }}>
-			<Typography
-				variant="h4"
-				gutterBottom
-				sx={{
-					color: "white",
-					fontWeight: 500,
-					mb: 4,
-				}}
-			>
+			<Typography variant="h4" sx={{ color: "white", mb: 4 }}>
 				Meus Aluguéis
 			</Typography>
 
-			<TableContainer
-				component={Paper}
-				sx={{
-					backgroundColor: "#121212",
-				}}
-			>
+			<TableContainer component={Paper} sx={{ backgroundColor: "#121212" }}>
 				<Table>
 					<TableHead>
 						<TableRow>
 							{[
 								"ID",
+								"Locado em",
 								"Filme",
 								"Categoria",
 								"Data Início",
 								"Data Fim",
 								"Valor",
-								"Status de Pagamento",
+								"Status",
 								"Ações",
 							].map((header) => (
 								<TableCell
@@ -193,58 +201,50 @@ export default function MyRentals() {
 
 					<TableBody>
 						{rentals.map((rental) => {
-							const status = rental.payment?.status;
 							const amount =
-								rental.payment?.amount ??
-								rental.days * 9.9;
+								rental.payment?.amount ?? rental.days * 9.9;
 
 							return (
 								<TableRow
 									key={rental.id}
 									sx={{
+										"& td": {
+											color: "white",
+											borderBottom: "1px solid #333",
+										},
 										"&:hover": {
-											backgroundColor:
-												"#1f1f1f",
+											backgroundColor: "#1f1f1f",
 										},
 									}}
 								>
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
-										{rental.id}
+									<TableCell>{rental.id}</TableCell>
+									<TableCell>
+										{formatDate(rental.rentedAt)}
 									</TableCell>
-
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
-										{rental.movie.title}
+									<TableCell>{rental.movie.title}</TableCell>
+									<TableCell>
+										{getCategoryName(rental.movie.categoryId)}
 									</TableCell>
-
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
-										{getCategoryName(
-											rental.movie.categoryId
-										)}
-									</TableCell>
-
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
+									<TableCell>
 										{formatDate(rental.startDate)}
 									</TableCell>
-
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
+									<TableCell>
 										{formatDate(rental.endDate)}
 									</TableCell>
-
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
+									<TableCell>
 										R$ {amount.toFixed(2)}
 									</TableCell>
-
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
-										{getStatusChip(status)}
+									<TableCell>
+										{getStatusChip(rental.payment?.status)}
 									</TableCell>
-
-									<TableCell sx={{ color: "white", borderBottom: "1px solid #333" }}>
+									<TableCell>
 										<Button
 											size="small"
 											sx={{
 												color: "#E50914",
 												fontWeight: "bold",
 											}}
+											onClick={() => handleOpenDetails(rental)}
 										>
 											Ver
 										</Button>
@@ -255,6 +255,44 @@ export default function MyRentals() {
 					</TableBody>
 				</Table>
 			</TableContainer>
+
+			{/* 🔥 Modal detalhes */}
+			<RentalDetailsModal
+				open={detailsOpen}
+				onClose={handleCloseDetails}
+				rental={selectedRental}
+				onRent={() => {
+					if (!selectedRental) return;
+
+					setDetailsOpen(false);
+					setSelectedMovie(selectedRental.movie);
+					setOpenRentalModal(true);
+				}}
+			/>
+
+			{/* 🔥 Confirmação aluguel */}
+			<RentalConfirmationModal
+				open={openRentalModal}
+				onClose={() => setOpenRentalModal(false)}
+				movie={selectedMovie}
+				onRentalCreated={(rentalId, amount) => {
+					setOpenRentalModal(false);
+					setCreatedRentalId(rentalId);
+					setCreatedRentalAmount(amount);
+					setOpenPaymentModal(true);
+				}}
+			/>
+
+			{/* 🔥 Confirmação pagamento */}
+			<PaymentConfirmationModal
+				open={openPaymentModal}
+				onClose={async () => {
+					setOpenPaymentModal(false);
+					await fetchRentals(); // atualiza tabela
+				}}
+				rentalId={createdRentalId}
+				amount={createdRentalAmount}
+			/>
 		</Container>
 	);
 }
