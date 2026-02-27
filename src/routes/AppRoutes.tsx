@@ -9,8 +9,14 @@ import PublicRoute from "./PublicRoutes";
 import NotFound from "@/pages/NotFound";
 import MyRentals from "@/pages/client/MyRentals";
 import Movies from "@/pages/client/Movies";
+import MoviesAdmin from "@/pages/admin/Movies";
 import MainLayout from "@/components/layout/MainLayout";
 import AuthLayout from "@/components/layout/AuthLayout";
+import AdminLayout from "@/components/layout/AdminLayout";
+import Payments from "@/pages/admin/Payments";
+import Categories from "@/pages/admin/Categories";
+import Users from "@/pages/admin/Users";
+import Rentals from "@/pages/admin/Rentals";
 
 export default function AppRoutes() {
   return (
@@ -46,7 +52,7 @@ export default function AppRoutes() {
 								<Movies />
 							</UserRoute>
 						}
-						/>
+					/>
 					<Route 
 						path="/my-rentals" 
 						element={
@@ -54,18 +60,60 @@ export default function AppRoutes() {
 								<MyRentals />
 							</UserRoute>
 						} 
-						/>
+					/>
 				</Route>
 				
         {/* ADMIN */}
-				<Route
-					path="/dashboard"
-					element={
-						<AdminRoutes>
-							<Dashboard />
-						</AdminRoutes>
-					}
-				/>
+				<Route element={<AdminLayout />}>
+					<Route
+						path="/dashboard"
+						element={
+							<AdminRoutes>
+								<Dashboard />
+							</AdminRoutes>
+						}
+					/>
+					<Route
+						path="/movies"
+						element={
+							<AdminRoutes>
+								<MoviesAdmin />
+							</AdminRoutes>
+						}
+					/>
+					<Route
+						path="/categories"
+						element={
+							<AdminRoutes>
+								<Categories />
+							</AdminRoutes>
+						}
+					/>
+					<Route
+						path="/users"
+						element={
+							<AdminRoutes>
+								<Users />
+							</AdminRoutes>
+						}
+					/>
+					<Route
+						path="/rentals"
+						element={
+							<AdminRoutes>
+								<Rentals />
+							</AdminRoutes>
+						}
+					/>
+					<Route
+						path="/payments"
+						element={
+							<AdminRoutes>
+								<Payments />
+							</AdminRoutes>
+						}
+					/>
+				</Route>
 
 				<Route path="*" element={<NotFound />} />
       </Routes>
